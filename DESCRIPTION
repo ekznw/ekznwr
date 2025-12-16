@@ -1,0 +1,17 @@
+Package: ekznwr
+Version: 0.0.1
+Date: 2025-12-16
+Title: Ezemvelo KZN Wildlife R data science
+Author: Paul J Gordijn <paul.gordijn@kznwildlife.com>
+Maintainer: Paul J Gordijn <paul.gordijn@kznwildlife.com>
+Description: Functions for streamling use of Ezemvelo KZN Wildlife data sets and archives using R.
+Depends:
+    R (>= 4.5)
+Imports:
+    cli,
+    data.table
+RoxygenNote: 7.3.3
+Roxygen: list(markdown = TRUE)
+LazyData: true
+Encoding: UTF-8
+License: MIT + file LICENSE.md
