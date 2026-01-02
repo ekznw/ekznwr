@@ -16,7 +16,7 @@ devtools::install_github('ekznw/ekznwr')
 
 ## GIS Metadata
 
-```{.mermaid}
+```mermaid
 graph TD
     A[Drop and drag GIS data files] --> B{Support checks}
     B -->|Yes| C[
