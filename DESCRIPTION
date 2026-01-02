@@ -9,7 +9,9 @@ Depends:
     R (>= 4.5)
 Imports:
     cli,
-    data.table
+    data.table,
+    officer,
+    tools
 RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
 LazyData: true
