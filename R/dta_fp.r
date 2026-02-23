@@ -16,9 +16,9 @@ dta_fp <- function(
   "Name" <- NULL
   # check the extract info has required list items
   if (!all(
-    "zip_contents" %in% names(extract_i),
-    "repo_parent_dir" %in% names(extract_i),
-    "repo" %in% names(extract_i),
+    "arc_file" %in% names(extract_i),
+    "arc_file_contents" %in% names(extract_i),
+    "parent_dir" %in% names(extract_i),
     "extract_dir" %in% names(extract_i)
   )) {
     cli::cli_alert_warning(
@@ -26,8 +26,8 @@ dta_fp <- function(
     )
   }
 
-  zc <- extract_i$zip_contents
-  
+  zc <- extract_i$arc_file_contents
+
   # if param name is present use it to filter the Name field
   if (!is.null(name)) {
     zc_fltr <- zc[Name %in% name]
@@ -52,7 +52,8 @@ dta_fp <- function(
   }
 
   # return file path
-  fp <- file.path(extract_i$extract_dir, zc_fltr$Name[1])
-  fp <- gsub("[/\\\\]+$", "", fp)
-  return(fp)
+  fp <- file.path(extract_i$extract_dir,
+    basename(extract_i$arc_file), zc_fltr$Name[1]
+  )
+  gsub("[/\\\\]+$", "", fp)
 }

@@ -1,15 +1,19 @@
 Package: ekznwr
 Version: 0.0.1
 Date: 2025-12-16
-Title: Ezemvelo KZN Wildlife R data science
-Author: Paul J Gordijn <paul.gordijn@kznwildlife.com>
-Maintainer: Paul J Gordijn <paul.gordijn@kznwildlife.com>
+Title: Ezemvelo KZN Wildlife R data science & GIS
+Authors@R: 
+    person("Paul", "Gordijn", email = "your.email@kznwildlife.com",
+        role = c("aut", "cre")
+    )
 Description: Functions for streamling use of Ezemvelo KZN Wildlife data sets and archives using R.
+URL: https://github.com/ekznw/ekznwr
+BugReports: https://github.com/ekznw/ekznwr/issues
 Depends:
-    R (>= 4.5)
+    R (>= 4.5),
+    data.table
 Imports:
     cli,
-    data.table,
     officer,
     tools
 RoxygenNote: 7.3.3

@@ -1,10 +1,6 @@
-
-
-<!-- Badges -->
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-sizeemg)
 ---
-
-Package in early stages of development.
+Package in early stages of development and testing.
+---
 
 ## Installation
 

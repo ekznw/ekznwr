@@ -1,17 +1,22 @@
-.onAttach <- function(libname, ekznwr) {
+
+.onAttach <- function(libname, pkgname) {
+
+  if (!interactive()) return()
+
+  desc <- utils::packageDescription(pkgname)
+
   packageStartupMessage(
-    cat(
-      cli::style_blurred(c(cli::col_white("Loading "))),
-      cli::style_bold(cli::col_green("ekznwr ")),
-      cli::col_white("v0.0.1  "),
-      cli::style_blurred(c("|> https://github.com/ekznw/ekznwr\n"))
-    )
+    desc$Package, " v", desc$Version,
+    " — ", desc$Title,
+    "\n", desc$URL
   )
 }
+
 .onLoad <- function(libname, ekznwr) {
   op <- options()
   op.ekznwr <- list(
-    extract_dir = file.path(tempdir(), "ekznw_dta")
+    extract_dir = file.path(tempdir(), "ekznw_dta"),
+    max_map_age = 60 * 60 * 24
   )
   toset <- !(names(op.ekznwr) %in% names(op))
   if (any(toset)) options(op.ekznwr[toset])
