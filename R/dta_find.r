@@ -3,6 +3,7 @@
 #' @param parent_dir The parent directory within which to search for the data file.
 #' @param search_key The search key to use to find the exact data file. NBS! This is only applied to the filename, not the directory/path (see `dir_filter`). Ideally provide the exact file name of the data file. Else 'regex' wildcards can be used.
 #' @param dir_filter Parameter used to filter files by directory regex.
+#' @return The full filename for the specified data set. If the data is not found or possible duplicates are detected the function will propmt the user accordingly.
 #' @author Paul J. Gordijn
 #' @export
 #' @import data.table

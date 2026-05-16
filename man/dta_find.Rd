@@ -13,6 +13,9 @@ dta_find(parent_dir = "~", search_key = NULL, dir_filter = NULL)
 
 \item{dir_filter}{Parameter used to filter files by directory regex.}
 }
+\value{
+The full filename for the specified data set. If the data is not found or possible duplicates are detected the function will propmt the user accordingly.
+}
 \description{
 Searches within a parent directory for a data file given its extension and search key.
 }
