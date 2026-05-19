@@ -1,5 +1,5 @@
 ---
-Package in early stages of development and testing.
+Management tools for Ezemvelo KZN Wildlife spatial data
 ---
 
 ## Installation
