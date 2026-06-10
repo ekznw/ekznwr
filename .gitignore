@@ -1,2 +1,4 @@
 /.quarto/
 **/*.quarto_ipynb
+**git**
+**pkg_mngmt.r**

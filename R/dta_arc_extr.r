@@ -108,13 +108,13 @@ dta_arc_extr <- function(
   }
   if (!is.null(t)) {
     if (t == TRUE) {
-      arc_ext$msg <- "Err ekz:01. Duplicate archive LIKE contents."
+      arc_ext$msg <- "Duplicate extracted file detected."
       arc_ext
       cli::cli_inform(
-        c("x" = arc_ext$msg, " " = "Archive {arc_ext$arc_file} not extracted.")
+        c("i" = arc_ext$msg, " " = "No need to extract {arc_ext$arc_file}.")
       )
     } else {
-      arc_ext$msg <- "Err ekz:02. Duplicate archive DISSIMLAR contents."
+      arc_ext$msg <- "Err ekz:01. Duplicate archive DISSIMLAR contents."
       cli::cli_inform(
         c("x" = arc_ext$msg, " " = "Archive {arc_ext$arc_file} not extracted.")
       )

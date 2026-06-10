@@ -136,6 +136,10 @@ escape_regex <- function(x) {
   gsub("([\\^\\$\\.\\|\\(\\)\\[\\]\\{\\}\\+\\*\\?\\\\])", "\\\\\\1", x)
 }
 
+# #' @export
+# #' internal function used to find and list the contents of 
+
+
 #' @export
 # internal for safe ilike that escapes regex
 safe_ilike <- function(x, pattern) {

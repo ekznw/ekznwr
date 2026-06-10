@@ -44,10 +44,10 @@ dta_find <- function(
   } else if (length(fs) > 1) {
     cli::cli_inform(c(
       "i" = "Refine your search key: {search_key}.",
-      " " = "{length(fs)} file{?s} printed below."
+      " " = "{length(fs)} file{?s} printed (& returned) below."
     ))
     print(fs)
-    stop()
+    return(fs)
   }
   fs
 }
