@@ -1,59 +1,192 @@
-#' @title Generates file path from extracted data
-#' @description Uses the result of a successful running of `dta_extract()` to generate a file path.
-#' @param extract_i Result from `dta_extract()`.
-#' @param name String used to match the file name of a file from the extracted archive.
-#' @param row_n Integer specifying the item as presented in the order of the zip_contents table in the extracted archive.
-#' @param last_slash Removes the last slash, if it exists, on the returned file path. Defaults to `TRUE`.
-#' @author Paul J. Gordijn
+#' Generate a path to an extracted archive member
+#'
+#' Uses the result returned by [dta_arc_extr()] to generate the path to one
+#' extracted archive member.
+#'
+#' Supply exactly one of `name` or `row_n`.
+#'
+#' @param extract_i Result returned by [dta_arc_extr()].
+#' @param name Character scalar. Regular expression used to match an archive
+#'   member name.
+#' @param row_n Integer scalar identifying a row in
+#'   `extract_i$arc_file_contents`.
+#' @param last_slash Logical. If `TRUE`, remove trailing path separators from
+#'   the returned path.
+#'
+#' @return Character scalar containing the extracted file or directory path.
 #' @export
-#' @import data.table
 dta_fp <- function(
   extract_i = NULL,
   name = NULL,
   row_n = NULL,
   last_slash = TRUE
 ) {
-  "Name" <- NULL
-  # check the extract info has required list items
-  if (!all(
-    "arc_file" %in% names(extract_i),
-    "arc_file_contents" %in% names(extract_i),
-    "parent_dir" %in% names(extract_i),
-    "extract_dir" %in% names(extract_i)
-  )) {
-    cli::cli_alert_warning(
-      "Missing information from the {.var extract_i}."
+  if (!is.list(extract_i)) {
+    cli::cli_abort(
+      "{.arg extract_i} must be a result returned by {.fn dta_arc_extr}."
     )
   }
 
-  zc <- extract_i$arc_file_contents
-
-  # if param name is present use it to filter the Name field
-  if (!is.null(name)) {
-    zc_fltr <- zc[Name %in% name]
-    row_n <- NULL
+  if (!"arc_file_contents" %in% names(extract_i)) {
+    cli::cli_abort(
+      "{.arg extract_i} does not contain {.field arc_file_contents}."
+    )
   }
-  # if there is a row number use that
-  if (!is.null(row_n)) {
-    if (row_n > nrow(zc)) {
+
+  if (!is.logical(last_slash) ||
+      length(last_slash) != 1L ||
+      is.na(last_slash)) {
+    cli::cli_abort(
+      "{.arg last_slash} must be one non-missing logical value."
+    )
+  }
+
+  selector_count <- sum(
+    !is.null(name),
+    !is.null(row_n)
+  )
+
+  if (selector_count != 1L) {
+    cli::cli_abort(
+      "Supply exactly one of {.arg name} or {.arg row_n}."
+    )
+  }
+
+  contents <- data.table::as.data.table(
+    data.table::copy(extract_i$arc_file_contents)
+  )
+
+  if (!"Name" %in% names(contents)) {
+    cli::cli_abort(
+      "{.field arc_file_contents} must contain a {.field Name} column."
+    )
+  }
+
+  if (nrow(contents) == 0L) {
+    cli::cli_abort(
+      "{.field arc_file_contents} contains no archive members."
+    )
+  }
+
+  if (!is.null(name)) {
+    if (!is.character(name) ||
+        length(name) != 1L ||
+        is.na(name) ||
+        !nzchar(name)) {
       cli::cli_abort(
-        "Row number {.var row_n} greater number of rows in table."
+        "{.arg name} must be one non-empty character value."
       )
     }
-    zc_fltr <- zc[row_n]
+
+    matched <- tryCatch(
+      grepl(
+        pattern = name,
+        x = contents$Name,
+        ignore.case = TRUE,
+        perl = TRUE
+      ),
+      error = function(e) {
+        cli::cli_abort(
+          c(
+            "Invalid regular expression supplied to {.arg name}.",
+            "x" = conditionMessage(e)
+          )
+        )
+      }
+    )
+
+    selected <- contents[matched]
+
+    if (nrow(selected) != 1L) {
+      examples <- paste(
+        utils::head(selected$Name, 10L),
+        collapse = ", "
+      )
+
+      cli::cli_abort(c(
+        "The {.arg name} selector must match exactly one archive member.",
+        "i" = "{nrow(selected)} matches were found.",
+        "i" = if (nrow(selected) > 0L) {
+          "Matches include: {examples}"
+        } else {
+          "No archive members matched {.val {name}}."
+        }
+      ))
+    }
+  } else {
+    if (!is.numeric(row_n) ||
+        length(row_n) != 1L ||
+        is.na(row_n) ||
+        row_n != as.integer(row_n)) {
+      cli::cli_abort(
+        "{.arg row_n} must be one whole number."
+      )
+    }
+
+    row_n <- as.integer(row_n)
+
+    if (row_n < 1L || row_n > nrow(contents)) {
+      cli::cli_abort(
+        c(
+          "{.arg row_n} is outside the archive table.",
+          "i" = "Valid rows are 1 to {nrow(contents)}."
+        )
+      )
+    }
+
+    selected <- contents[row_n]
   }
 
-  if (nrow(zc_fltr) == 0 || nrow(zc_fltr) > 1) {
-    cli::cli_inform(c(
-      "i" = "Please refine search key: {name} for a match.",
-      " " = "Single match required."
-    ))
-    return(zc)
+  member <- selected$Name[[1L]]
+  member <- archive_member_normalise(member)
+
+  if (!archive_member_is_safe(member)) {
+    cli::cli_abort(
+      "The selected archive member contains an unsafe path: {.path {member}}."
+    )
   }
 
-  # return file path
-  fp <- file.path(extract_i$extract_dir,
-    basename(extract_i$arc_file), zc_fltr$Name[1]
-  )
-  gsub("[/\\\\]+$", "", fp)
+  # New dta_arc_extr() results provide archive_dir directly.
+  archive_dir <- extract_i$archive_dir
+
+  # Backward compatibility with older dta_arc_extr() results.
+  if (is.null(archive_dir) ||
+      length(archive_dir) == 0L ||
+      is.na(archive_dir) ||
+      !nzchar(archive_dir)) {
+    required <- c("extract_dir", "arc_file")
+    missing <- setdiff(required, names(extract_i))
+
+    if (length(missing) > 0L) {
+      cli::cli_abort(
+        "{.arg extract_i} is missing field{?s}: {missing}."
+      )
+    }
+
+    archive_file <- extract_i$arc_file[[1L]]
+
+    modern_dir <- file.path(
+      extract_i$extract_dir,
+      tools::file_path_sans_ext(archive_file)
+    )
+
+    legacy_dir <- file.path(
+      extract_i$extract_dir,
+      basename(archive_file)
+    )
+
+    archive_dir <- if (dir.exists(modern_dir)) {
+      modern_dir
+    } else {
+      legacy_dir
+    }
+  }
+
+  fp <- file.path(archive_dir, member)
+
+  if (isTRUE(last_slash)) {
+    fp <- sub("[/\\\\]+$", "", fp)
+  }
+
+  fp
 }

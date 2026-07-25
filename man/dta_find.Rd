@@ -4,7 +4,14 @@
 \alias{dta_find}
 \title{Get data file path}
 \usage{
-dta_find(parent_dir = "~", search_key = NULL, dir_filter = NULL)
+dta_find(
+  parent_dir = "~",
+  search_key = NULL,
+  dir_filter = NULL,
+  wanted = NULL,
+  unwanted = NULL,
+  ...
+)
 }
 \arguments{
 \item{parent_dir}{The parent directory within which to search for the data file.}
@@ -12,6 +19,12 @@ dta_find(parent_dir = "~", search_key = NULL, dir_filter = NULL)
 \item{search_key}{The search key to use to find the exact data file. NBS! This is only applied to the filename, not the directory/path (see \code{dir_filter}). Ideally provide the exact file name of the data file. Else 'regex' wildcards can be used.}
 
 \item{dir_filter}{Parameter used to filter files by directory regex.}
+
+\item{wanted}{Regex search key used to filter \emph{for} wanted files.}
+
+\item{unwanted}{Regex search key used to filter \emph{out} unwanted files.}
+
+\item{...}{Reserved for future use.}
 }
 \value{
 The full filename for the specified data set. If the data is not found or possible duplicates are detected the function will propmt the user accordingly.

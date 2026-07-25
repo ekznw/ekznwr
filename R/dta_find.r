@@ -3,6 +3,9 @@
 #' @param parent_dir The parent directory within which to search for the data file.
 #' @param search_key The search key to use to find the exact data file. NBS! This is only applied to the filename, not the directory/path (see `dir_filter`). Ideally provide the exact file name of the data file. Else 'regex' wildcards can be used.
 #' @param dir_filter Parameter used to filter files by directory regex.
+#' @param wanted Regex search key used to filter *for* wanted files.
+#' @param unwanted Regex search key used to filter *out* unwanted files.
+#' @param ... Reserved for future use.
 #' @return The full filename for the specified data set. If the data is not found or possible duplicates are detected the function will propmt the user accordingly.
 #' @author Paul J. Gordijn
 #' @export
@@ -10,7 +13,10 @@
 dta_find <- function(
   parent_dir = "~",
   search_key = NULL,
-  dir_filter = NULL
+  dir_filter = NULL,
+  wanted = NULL,
+  unwanted = NULL,
+  ...
 ) {
   # arg evaluation
   if (is.null(parent_dir)) cli::cli_abort("Specify {.var parent_dir}!")
@@ -34,6 +40,8 @@ dta_find <- function(
     recursive = TRUE
   )
   if (!is.null(dir_filter)) fs <- fs[fs %ilike% dir_filter]
+  if (!is.null(wanted)) fs <- fs[fs %ilike% wanted]
+  if (!is.null(unwanted)) fs <- fs[!fs %ilike% unwanted]
   if (length(fs) == 0) {
     cli::cli_inform(c(
       "i" = "No match for data file.",

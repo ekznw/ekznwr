@@ -1,23 +1,33 @@
 Package: ekznwr
-Version: 0.0.1
-Date: 2025-12-16
-Title: Ezemvelo KZN Wildlife R data science & GIS
-Authors@R: 
-    person("Paul", "Gordijn", email = "your.email@kznwildlife.com",
+Version: 0.0.5
+Title: Data Management and GIS Utilities for Ezemvelo KZN Wildlife
+Authors@R:
+    person(
+        "Paul",
+        "Gordijn",
+        email = "paul.gordijn@kznwildlife.com",
         role = c("aut", "cre")
     )
-Description: Functions for streamling use of Ezemvelo KZN Wildlife data sets and archives using R.
+Description: Tools for scanning, classifying, grouping, locating, and
+    extracting organisational datasets and geospatial data archives. Includes
+    support for compound GIS datasets, associated sidecar files, mount-aware
+    inventories, and logical dataset summaries.
 URL: https://github.com/ekznw/ekznwr
 BugReports: https://github.com/ekznw/ekznwr/issues
 Depends:
-    R (>= 4.5),
-    data.table
+    R (>= 4.2.0)
 Imports:
     cli,
+    data.table,
     officer,
+    purrr,
     tools
-Roxygen: list(markdown = TRUE)
-LazyData: true
+Suggests:
+    terra,
+    testthat (>= 3.0.0),
+    withr
+License: MIT + file LICENSE
 Encoding: UTF-8
-License: MIT + file LICENSE.md
+Roxygen: list(markdown = TRUE)
 Config/roxygen2/version: 8.0.0
+Config/testthat/edition: 3

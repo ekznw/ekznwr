@@ -1,13 +1,11 @@
-#' Short internal functions
+#' Read metadata tables from a Word document
 #'
-#' Turns parameters into a list
-#' An alias for list in pipe processing.
-#' Paul J. Gordijn
-#' @noRd
-#' 
-#' 
+#' Extracts and reshapes tables in a `.docx` document.
+#'
+#' @param this_file Path to a Word document.
+#'
+#' @return A named list of data tables extracted from the document.
 #' @export
-# internal function to read metadata from docx tables
 read_word_tables <- function(
   this_file = NULL # document path
 ) {
@@ -70,7 +68,7 @@ read_word_tables <- function(
       idx <- which(names(dt_wide) %in% vcol):ncol(dt_wide)
       dt_wide <- dt_wide[,
         newcol := apply(
-          .SD, 1, function(x) paste(na.omit(x), collapse = " \n ")
+          .SD, 1, function(x) paste(stats::na.omit(x), collapse = " \n ")
         ),
         .SDcols = idx
       ]
@@ -130,24 +128,17 @@ read_word_tables <- function(
   flat
 }
 
-#' @export
 # internal escape regex patterns
 escape_regex <- function(x) {
   gsub("([\\^\\$\\.\\|\\(\\)\\[\\]\\{\\}\\+\\*\\?\\\\])", "\\\\\\1", x)
 }
 
-# #' @export
-# #' internal function used to find and list the contents of 
-
-
-#' @export
 # internal for safe ilike that escapes regex
 safe_ilike <- function(x, pattern) {
   pattern <- escape_regex(pattern)
   x[x %ilike% pattern]
 }
 
-#' @export
 # Internal function to 'map' zip files in a parent directory. This will save the contents in the parent repo.
 map_dir <- function(parent_dir = NULL) {
   # check if parent_dir exists
@@ -160,7 +151,12 @@ map_dir <- function(parent_dir = NULL) {
     info <- file.info(cache_file)
     age_secs <- as.numeric(Sys.time() - info$mtime, units = "secs")
 
-    if (age_secs <= getOption("max_map_age")) {
+    if (
+      age_secs <= getOption(
+        "ekznwr.max_map_age",
+        default = 60 * 60 * 24
+      )
+    ) {
       # Cached file is recent enough: use it
       flst <- readRDS(cache_file)
     } else {
@@ -187,7 +183,6 @@ map_dir <- function(parent_dir = NULL) {
   flst
 }
 
-#' @export
 # internal function to normalize text to snake case
 # and general neatening up
 normalize <- function(x) {
@@ -198,9 +193,16 @@ normalize <- function(x) {
   x
 }
 
+#' Check TIFF raster files
+#'
+#' Attempts to read and process each supplied TIFF with [terra::rast()].
+#' Files that cannot be read are deleted.
+#'
+#' @param tifs Character vector of TIFF file paths.
+#'
+#' @return A logical vector indicating whether each file was read
+#'   successfully.
 #' @export
-# internal function to check list of tifs for validity
-# returns a logical vector indicating which have errors
 check_tifs <- function(
   tifs = NULL
 ) {
@@ -222,4 +224,145 @@ check_tifs <- function(
       FALSE
     })
   }, USE.NAMES = FALSE)
+}
+
+#' Null coalescing helper
+#'
+#' @name null-coalesce
+#' @aliases %||%
+#' @param x A value to inspect.
+#' @param y A fallback value.
+#'
+#' @return `y` when `x` is `NULL`, empty, or entirely `NA`; otherwise `x`.
+#' @keywords internal
+`%||%` <- function(x, y) {
+  if (is.null(x) || length(x) == 0 || all(is.na(x))) y else x
+}
+
+concat_project_code <- function(
+  root = ".",
+  r_folder = "R",
+  app_file = "app.R",
+  output_prefix = "combined_code",
+  version_file = "VERSION.txt",
+  wanted = NULL
+) {
+    # STEP 1: HANDLE VERSIONING
+  version_path <- file.path(root, version_file)
+  if (!file.exists(version_path)) {
+    version <- "1.0.0"
+  } else {
+    version <- readLines(version_path, warn = FALSE)[1]
+  }
+  # split version
+  parts <- strsplit(version, "\\.")[[1]]
+  major <- as.integer(parts[1])
+  minor <- as.integer(parts[2])
+  patch <- as.integer(parts[3])
+  # increment patch
+  patch <- patch + 1
+  new_version <- paste(major, minor, patch, sep = ".")
+  # save updated version
+  writeLines(new_version, version_path)
+  message("Version updated to: v", new_version)
+  # STEP 2: PATHS
+  app_path <- file.path(root, app_file)
+  r_path   <- file.path(root, r_folder)
+  if (!file.exists(app_path)) {
+    stop("app.R not found in root: ", root)
+  }
+  if (!dir.exists(r_path)) {
+    stop("R folder not found in root: ", root)
+  }
+  # STEP 3: OUTPUT FILE
+  output_file <- paste0(output_prefix, "_v", new_version, ".txt")
+  con <- file(output_file, open = "w")
+  # STEP 4: HELPER FUNCTION
+  write_file <- function(path) {
+    cat(
+      "\n\n############################################################\n",
+      file = con
+    )
+    cat(
+      paste0("# FILE: ", path, "\n"),
+      file = con
+    )
+    cat(
+      "############################################################\n\n",
+      file = con
+    )
+    lines <- readLines(path, warn = FALSE)
+    writeLines(lines, con)
+  }
+  # STEP 5: WRITE HEADER
+  cat(
+    paste0(
+      "================\n",
+      "# COMBINED PROJECT CODE\n",
+      "# Version: v", new_version, "\n",
+      "# Generated: ", Sys.time(), "\n",
+      "================\n\n"
+    ),
+    file = con
+  )
+  # STEP 6: WRITE FILES
+  write_file(app_path)
+  r_files <- list.files(
+    r_path,
+    pattern = "\\.R$",
+    full.names = TRUE
+  )
+  if (!is.null(wanted)) r_files <- r_files[r_files %ilike% wanted]
+  r_files <- sort(r_files)
+  for (f in r_files) {
+    write_file(f)
+  }
+  close(con)
+  message("Combined file written to: ", output_file)
+}
+
+#' Bundle project code as text files
+#'
+#' Copies an application's R source files into a bundle directory and changes
+#' their extensions to `.txt`.
+#'
+#' @param root Project root directory.
+#' @param r_folder Source directory, relative to `root`.
+#' @param app_file Application entry-point file, relative to `root`.
+#' @param output_ext Output extension. Currently reserved for future use.
+#' @param output_folder Bundle directory, relative to `root`.
+#' @param wanted Optional filter reserved for future use.
+#'
+#' @return Invisibly returns the result of the final file-copy operation.
+#' @export
+bundle_project_code <- function(
+  root = ".",
+  r_folder = "R",
+  app_file = "app.R",
+  output_ext = "txt",
+  output_folder = "bundle",
+  wanted = NULL
+) {
+  # make/check bundle dir
+  unlink(file.path(root, output_folder, "R"), recursive = TRUE)
+  dir.create(file.path(root, output_folder, "R"), recursive = TRUE,
+    showWarnings = FALSE)
+
+  # get files
+  fs <- list.files(file.path(root, r_folder), pattern = "\\.R$")
+
+  # copy to bundle dir
+  file.copy(
+    file.path(root, r_folder, fs),
+    gsub("\\.R$", "\\.txt", file.path(root, output_folder, "R", fs)),
+      overwrite = TRUE
+  )
+  # copy app file
+  if (file.exists(file.path(root, app_file))) {
+    file.copy(
+      file.path(root, app_file),
+      gsub("\\.R$", "\\.txt", file.path(root, output_folder, app_file)),
+        overwrite = TRUE
+    )
+  }
 }

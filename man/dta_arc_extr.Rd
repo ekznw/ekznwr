@@ -2,30 +2,38 @@
 % Please edit documentation in R/dta_arc_extr.r
 \name{dta_arc_extr}
 \alias{dta_arc_extr}
-\title{Extract archive data}
+\title{Extract files from a ZIP archive}
 \usage{
 dta_arc_extr(
   parent_dir = file.path(path.expand("~"), "Documents"),
   arc_file = NULL,
-  arc_file_filter = NULL
+  arc_file_filter = NULL,
+  overwrite = FALSE
 )
 }
 \arguments{
-\item{parent_dir}{File path wherein to search for archived data sets. Defaults to the users 'Documents' folder.}
+\item{parent_dir}{Directory within which ZIP archives are searched.}
 
-\item{arc_file}{Search key (string) used to filter by when searching for the archived data in the \code{parent_dir}.}
+\item{arc_file}{Character scalar. Regular expression that must match exactly
+one ZIP archive path.}
 
-\item{arc_file_filter}{Search key to filter for files within the (zip) archive to be extracted (i.e., not all contents of the archive need to be extracted). If NULL then all contents will be extracted.}
+\item{arc_file_filter}{Optional character scalar. Regular expression used to
+select archive members. If \code{NULL}, all archive members are selected.}
+
+\item{overwrite}{Logical. If \code{TRUE}, replace an existing extraction when the
+stored archive listing differs from the current archive.}
+}
+\value{
+Invisibly returns a list describing the archive, selected members,
+extraction directory, and extraction status.
 }
 \description{
-Extract files from a zipped data archive into a temporary (or other) location.
-\preformatted{
-**parent_dir** \\
-              **|__miscellaneous repo's** \\
-                    **|__arc_file** \\
-                             **|__arc_file_contents**
+Searches for one ZIP archive under \code{parent_dir} and extracts either all
+archive members or members matching \code{arc_file_filter}.
 }
-}
-\author{
-Paul J. Gordijn
+\details{
+Archive members are extracted into a directory beneath
+\code{getOption("ekznwr.extract_dir")}. The archive's relative path is retained,
+without its \code{.zip} extension, to avoid collisions between archives with the
+same basename in different source directories.
 }

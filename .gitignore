@@ -1,2 +1,22 @@
 /.quarto/
 **/*.quarto_ipynb**
+
+# R and RStudio session files
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+
+# Package build and check artefacts
+/*.Rcheck/
+/*.tar.gz
+
+# Generated website and coverage output
+/docs/
+/coverage/
+
+# OS and editor artefacts
+.DS_Store
+Thumbs.db
+*~
+*.swp

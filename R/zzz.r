@@ -7,18 +7,24 @@
 
   packageStartupMessage(
     desc$Package, " v", desc$Version,
-    " — ", desc$Title,
+    " - ", desc$Title,
     "\n", desc$URL
   )
 }
 
-.onLoad <- function(libname, ekznwr) {
-  op <- options()
-  op.ekznwr <- list(
-    extract_dir = file.path(tempdir(), "ekznw_dta"),
-    max_map_age = 60 * 60 * 24
+.onLoad <- function(libname, pkgname) {
+  defaults <- list(
+    ekznwr.extract_dir = file.path(tempdir(), "ekznw_dta"),
+    ekznwr.max_map_age = 60 * 60 * 24
   )
-  toset <- !(names(op.ekznwr) %in% names(op))
-  if (any(toset)) options(op.ekznwr[toset])
+
+  current <- options()
+
+  to_set <- !names(defaults) %in% names(current)
+
+  if (any(to_set)) {
+    options(defaults[to_set])
+  }
+
   invisible()
 }

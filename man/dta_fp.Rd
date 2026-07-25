@@ -2,22 +2,29 @@
 % Please edit documentation in R/dta_fp.r
 \name{dta_fp}
 \alias{dta_fp}
-\title{Generates file path from extracted data}
+\title{Generate a path to an extracted archive member}
 \usage{
 dta_fp(extract_i = NULL, name = NULL, row_n = NULL, last_slash = TRUE)
 }
 \arguments{
-\item{extract_i}{Result from \code{dta_extract()}.}
+\item{extract_i}{Result returned by \code{\link[=dta_arc_extr]{dta_arc_extr()}}.}
 
-\item{name}{String used to match the file name of a file from the extracted archive.}
+\item{name}{Character scalar. Regular expression used to match an archive
+member name.}
 
-\item{row_n}{Integer specifying the item as presented in the order of the zip_contents table in the extracted archive.}
+\item{row_n}{Integer scalar identifying a row in
+\code{extract_i$arc_file_contents}.}
 
-\item{last_slash}{Removes the last slash, if it exists, on the returned file path. Defaults to \code{TRUE}.}
+\item{last_slash}{Logical. If \code{TRUE}, remove trailing path separators from
+the returned path.}
+}
+\value{
+Character scalar containing the extracted file or directory path.
 }
 \description{
-Uses the result of a successful running of \code{dta_extract()} to generate a file path.
+Uses the result returned by \code{\link[=dta_arc_extr]{dta_arc_extr()}} to generate the path to one
+extracted archive member.
 }
-\author{
-Paul J. Gordijn
+\details{
+Supply exactly one of \code{name} or \code{row_n}.
 }
