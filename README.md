@@ -42,15 +42,3 @@ Run the test suite with:
 ```r
 testthat::test_local()
 ```
-
-## GIS metadata workflow
-
-```mermaid
-graph TD
-    A[Select GIS data files] --> B{Supported format?}
-    B -->|Yes| C[Automatic metadata extraction]
-    B -->|No| D{Manual override?}
-    D -->|Yes| A
-    D -->|No| E[Manual metadata entry]
-    C --> E
-```
