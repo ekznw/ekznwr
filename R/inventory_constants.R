@@ -22,6 +22,12 @@ inventory_ext <- list(
     "fgb"
   ),
 
+  style_primary = c(
+    "qml", "qlr",
+    "sld",
+    "lyr", "lyrx", "style", "stylx"
+  ),
+
   cad_primary = c("dxf", "dwg", "dgn"),
 
   tabular_primary = c(

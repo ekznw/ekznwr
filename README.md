@@ -42,3 +42,23 @@ Run the test suite with:
 ```r
 testthat::test_local()
 ```
+
+## Package documentation
+
+Regenerate package documentation:
+
+```r
+roxygen2::roxygenise()
+devtools::test()
+devtools::check()
+```
+
+## Local build & installation using devtools
+
+Regenerate package documentation:
+
+```r
+devtools::build()
+devtools::install()
+```
+

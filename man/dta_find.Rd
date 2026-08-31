@@ -27,10 +27,14 @@ dta_find(
 \item{...}{Reserved for future use.}
 }
 \value{
-The full filename for the specified data set. If the data is not found or possible duplicates are detected the function will propmt the user accordingly.
+The full path for the specified data set. In addition to regular
+files, Esri File Geodatabase (\code{.gdb}) and ArcInfo Binary Grid directories
+can be returned. If the data is not found or possible duplicates are
+detected, the function will prompt the user accordingly.
 }
 \description{
-Searches within a parent directory for a data file given its extension and search key.
+Searches within a parent directory for a data file or a
+directory-backed Esri dataset given its name and a search key.
 }
 \author{
 Paul J. Gordijn

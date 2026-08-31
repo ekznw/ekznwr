@@ -1,5 +1,5 @@
 Package: ekznwr
-Version: 0.0.5
+Version: 0.0.8
 Title: Data Management and GIS Utilities for Ezemvelo KZN Wildlife
 Authors@R:
     person(
@@ -8,6 +8,8 @@ Authors@R:
         email = "paul.gordijn@kznwildlife.com",
         role = c("aut", "cre")
     )
+Author: Paul Gordijn [aut, cre]
+Maintainer: Paul Gordijn <paul.gordijn@kznwildlife.com>
 Description: Tools for scanning, classifying, grouping, locating, and
     extracting organisational datasets and geospatial data archives. Includes
     support for compound GIS datasets, associated sidecar files, mount-aware
@@ -19,9 +21,11 @@ Depends:
 Imports:
     cli,
     data.table,
+    jsonlite,
     officer,
     purrr,
-    tools
+    tools,
+    xml2
 Suggests:
     terra,
     testthat (>= 3.0.0),
@@ -29,5 +33,5 @@ Suggests:
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.0
 Config/testthat/edition: 3

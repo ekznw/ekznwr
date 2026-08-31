@@ -15,6 +15,7 @@ inventory_classify_format <- function(ext, path = NULL) {
   if (ext %in% inventory_ext$virtual_raster) return("virtual_raster")
   if (ext %in% inventory_ext$raster_primary) return("raster")
   if (ext %in% inventory_ext$vector_primary) return("vector")
+  if (ext %in% inventory_ext$style_primary) return("style")
   if (ext %in% inventory_ext$cad_primary) return("cad")
   if (ext %in% inventory_ext$tabular_primary) return("tabular")
   if (ext %in% inventory_ext$document_primary) return("document")
@@ -53,6 +54,7 @@ inventory_classify_role <- function(ext, path = NULL, is_container = FALSE) {
     inventory_ext$raster_primary,
     inventory_ext$virtual_raster,
     inventory_ext$vector_primary,
+    inventory_ext$style_primary,
     inventory_ext$cad_primary,
     inventory_ext$tabular_primary,
     inventory_ext$document_primary,
@@ -440,10 +442,10 @@ apply_format_overrides <- function(dt) {
 #'   mount = c("gis_smb", "gis_smb", "teams_xdrive"),
 #'   path = c(
 #'     "landcover/salc1314wdd/hdr.adf",
-#'     "landcover/salc1314wdd/vat.adf",
+#'     "landcover/salc1314wdd/w001001.adf",
 #'     "roads/roads.shp"
 #'   ),
-#'   name = c("hdr.adf", "vat.adf", "roads.shp"),
+#'   name = c("hdr.adf", "w001001.adf", "roads.shp"),
 #'   size = c(1000, 2000, 5000),
 #'   isdir = FALSE
 #' )
@@ -529,11 +531,6 @@ inventory_classify <- function(
   dt[
     is.na(container_type) & grepl("\\.gdb$", location_path, ignore.case = TRUE),
     container_type := "esri_file_geodatabase"
-  ]
-
-  dt[
-    is.na(container_type) & grepl("\\.adf$", name, ignore.case = TRUE),
-    container_type := "esri_arcinfo_grid"
   ]
 
   dt[, data_file_format := mapply(

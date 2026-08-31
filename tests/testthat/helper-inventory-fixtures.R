@@ -16,7 +16,7 @@ make_inventory_fixture <- function() {
       "database/data.gpkg",
       "database/data.gpkg-wal",
       "terrain/grid/hdr.adf",
-      "terrain/grid/vat.adf",
+      "terrain/grid/w001001.adf",
       "terrain/grid.ovr",
       "workspace/sample.gdb/a00000001.gdbtable",
       "workspace/sample.gdb/a00000001.gdbtablx",

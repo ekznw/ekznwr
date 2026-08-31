@@ -15,8 +15,11 @@ is_gdb_path <- function(path) {
 #'
 #' @return Logical vector.
 is_arcinfo_grid_component <- function(name, path = name) {
-  grepl("\\.adf$", name, ignore.case = TRUE) |
-    grepl("/info/", path, ignore.case = TRUE)
+  grepl(
+    "^(hdr|dblbnd|sta|vat|prj|w[0-9]{6}x?)\\.adf$",
+    name,
+    ignore.case = TRUE
+  )
 }
 
 
@@ -82,13 +85,37 @@ inventory_detect_containers <- function(dt, path_col = "path") {
 
   # 2. ArcInfo Binary Grid
 
-  # ADF files belong to the parent grid folder.
-  idx_adf <- grepl("\\.adf$", dt$name, ignore.case = TRUE)
-  if (any(idx_adf, na.rm = TRUE)) {
-    dt[idx_adf & is.na(dataset_root), `:=`(
-      dataset_root = dirname(get(path_col)),
-      container_type = "esri_arcinfo_grid"
-    )]
+  # A Grid is a directory containing both its header and a wNNNNNN.adf
+  # raster-data file. Once identified, every physical component inside the
+  # directory belongs to the Grid, including files such as metadata.xml.
+  component_dirs <- unique(dirname(
+    p[!is.na(p) & is_arcinfo_grid_component(dt$name, p) %in% TRUE]
+  ))
+  component_dirs <- component_dirs[
+    !is.na(component_dirs) & nzchar(component_dirs)
+  ]
+
+  grid_roots <- component_dirs[vapply(
+    component_dirs,
+    function(root) {
+      component_names <- tolower(dt$name[dirname(p) == root])
+
+      "hdr.adf" %in% component_names &&
+        any(grepl("^w[0-9]{6}\\.adf$", component_names))
+    },
+    logical(1)
+  )]
+
+  if (length(grid_roots) > 0L) {
+    for (root in grid_roots) {
+      idx_grid <- (p == root | startsWith(p, paste0(root, "/"))) &
+        is.na(dt$dataset_root)
+
+      dt[idx_grid, `:=`(
+        dataset_root = root,
+        container_type = "esri_arcinfo_grid"
+      )]
+    }
   }
 
   # 3. Raster overview files
@@ -99,11 +126,23 @@ inventory_detect_containers <- function(dt, path_col = "path") {
 
   # 4. Esri INFO workspace support
   #
-  # INFO folders often support ArcInfo Grid / Coverage-style workspaces.
-  # In this inventory pipeline we do not promote INFO internals to standalone
-  # logical datasets by default, because that creates false-positive container
-  # rows such as the workspace root itself.
-  idx_info <- is_esri_info_component(dt$name, p)
+  # An INFO directory is workspace support when it is a sibling of a detected
+  # Grid. It can support several Grids, so its rows deliberately have no
+  # dataset_root and are not attached to any one Grid.
+  info_roots <- unique(file.path(dirname(grid_roots), "info"))
+  idx_info <- rep(FALSE, length(p))
+
+  if (length(info_roots) > 0L) {
+    p_lower <- tolower(p)
+
+    for (root in tolower(info_roots)) {
+      idx_info <- idx_info |
+        p_lower == root |
+        startsWith(p_lower, paste0(root, "/"))
+    }
+
+    idx_info <- idx_info & is.na(dt$dataset_root)
+  }
 
   if (any(idx_info, na.rm = TRUE)) {
     if (!"is_container_support" %in% names(dt)) {

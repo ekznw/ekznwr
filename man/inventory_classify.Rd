@@ -103,10 +103,10 @@ inv <- data.table::data.table(
   mount = c("gis_smb", "gis_smb", "teams_xdrive"),
   path = c(
     "landcover/salc1314wdd/hdr.adf",
-    "landcover/salc1314wdd/vat.adf",
+    "landcover/salc1314wdd/w001001.adf",
     "roads/roads.shp"
   ),
-  name = c("hdr.adf", "vat.adf", "roads.shp"),
+  name = c("hdr.adf", "w001001.adf", "roads.shp"),
   size = c(1000, 2000, 5000),
   isdir = FALSE
 )
